@@ -27,7 +27,7 @@ npx skills add huanancaoo/skills
 只安装中文技术写作 Skill：
 
 ```bash
-npx skills add https://github.com/huanancaoo/skills/tree/main/skills/chinese-technical-writing
+npx skills add huanancaoo/skills --skill chinese-technical-writing
 ```
 
 安装到全局位置：
