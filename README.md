@@ -4,7 +4,7 @@
 
 ## 收录内容
 
-### [中文技术写作](chinese-technical-writing/SKILL.md)
+### [中文技术写作](skills/chinese-technical-writing/SKILL.md)
 
 用于起草、审查和重写中文软件技术文档。该 Skill 适用于 README、API 文档、架构文档、ADR、开发与运维步骤，以及工程知识库。
 
@@ -27,7 +27,7 @@ npx skills add huanancaoo/skills
 只安装中文技术写作 Skill：
 
 ```bash
-npx skills add https://github.com/huanancaoo/skills/tree/main/chinese-technical-writing
+npx skills add https://github.com/huanancaoo/skills/tree/main/skills/chinese-technical-writing
 ```
 
 安装到全局位置：
@@ -41,10 +41,11 @@ npx skills add huanancaoo/skills -g
 ```text
 .
 ├── README.md
-└── chinese-technical-writing/
-    ├── SKILL.md
-    ├── evals/
-    └── references/
+└── skills/
+    └── chinese-technical-writing/
+        ├── SKILL.md
+        ├── evals/
+        └── references/
 ```
 
 ## 使用
