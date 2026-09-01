@@ -10,6 +10,10 @@
 
 它要求文档保持事实、契约和规范性语气不变，并识别阻塞性歧义。它不会补全未确认的接口、职责、术语映射或性能指标。
 
+### [前端交互决策](skills/frontend-interaction-decisions/SKILL.md)
+
+用于根据业务任务和信息特征选择 Dialog、Sheet、独立页、字段控件、表单布局、Table 或 DataTable。该 Skill 跨框架和组件库，会核对数据规模、服务端查询能力与重排语义，并对未决产品问题给出推荐答案后请求确认。
+
 ## 适用环境
 
 本仓库的 Skill 内容不依赖 Codex。只要 Agent 环境能够读取和加载 `SKILL.md`，就可以使用其指令。
@@ -30,6 +34,12 @@ npx skills add huanancaoo/skills
 npx skills add huanancaoo/skills --skill chinese-technical-writing
 ```
 
+只安装前端交互决策 Skill：
+
+```bash
+npx skills add huanancaoo/skills --skill frontend-interaction-decisions
+```
+
 安装到全局位置：
 
 ```bash
@@ -42,10 +52,15 @@ npx skills add huanancaoo/skills -g
 .
 ├── README.md
 └── skills/
-    └── chinese-technical-writing/
-        ├── SKILL.md
+    ├── chinese-technical-writing/
+    │   ├── SKILL.md
+    │   ├── evals/
+    │   └── references/
+    └── frontend-interaction-decisions/
+        ├── agents/
         ├── evals/
-        └── references/
+        ├── references/
+        └── SKILL.md
 ```
 
 ## 使用
