@@ -1,0 +1,11 @@
+{
+  "@@locale": "zh",
+  "appTitle": "应用",
+  "settings": "设置",
+  "theme": "主题",
+  "language": "语言",
+  "system": "跟随系统",
+  "light": "浅色",
+  "dark": "深色",
+  "operationFailed": "操作未能完成。"
+}

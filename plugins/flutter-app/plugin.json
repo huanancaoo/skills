@@ -1,0 +1,48 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "author": {
+    "email": "huanan.cao@hicity.world",
+    "name": "CAOHUANAN"
+  },
+  "description": "基于 Dart and Flutter 的 Flutter App 开发插件，包含项目初始化、通用 App 能力、AdaptiveTheme 主题及常用 UI 包；依赖由 Pub 解析最新 SDK 可兼容版本。",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "capabilities": [
+          "Skills",
+          "MCP"
+        ],
+        "category": "Developer Tools",
+        "composerIcon": "./assets/icon.svg",
+        "defaultPrompt": [
+          "使用固定技术栈初始化一个 Flutter App，先确认项目标识、SDK、平台和 API 地址。",
+          "为当前 Flutter App 实现网络请求、错误与加载状态、分页刷新和缓存。",
+          "为当前 Flutter App 实现主题、ARB 国际化和本地存储。"
+        ],
+        "developerName": "CAOHUANAN",
+        "displayName": "Flutter App 开发",
+        "logo": "./assets/icon.svg",
+        "longDescription": "复用 Dart and Flutter 技能与 Dart MCP。使用 FVM、Riverpod、go_router、Dio、Freezed/json_serializable、ARB、AdaptiveTheme、SharedPreferences、Secure Storage，以及 badges、gap、cached_network_image 和 shimmer；项目初始化与通用 App 能力按需求实施，所有依赖由 Pub 按所选 SDK 解析最新可兼容版本。",
+        "shortDescription": "完整基础栈、项目初始化与通用 App 能力"
+      }
+    }
+  },
+  "keywords": [
+    "flutter",
+    "dart",
+    "fvm",
+    "riverpod",
+    "go-router",
+    "dio",
+    "freezed",
+    "app-development",
+    "adaptive-theme",
+    "badges",
+    "gap",
+    "cached-network-image",
+    "shimmer"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "flutter-app",
+  "version": "0.2.0"
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "dart-mcp-server": {
+      "type": "stdio",
+      "command": "dart",
+      "args": ["mcp-server", "--enable", "cli", "--enable", "flutter_app_lifecycle"],
+      "env": { "AGENT_PLUGIN": "codex" }
+    }
+  }
+}

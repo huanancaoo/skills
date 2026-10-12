@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "appTitle": "App",
+  "@appTitle": { "description": "Application title; replace with the confirmed product name." },
+  "settings": "Settings",
+  "theme": "Theme",
+  "language": "Language",
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+  "operationFailed": "Could not complete the operation."
+}
