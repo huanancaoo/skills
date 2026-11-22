@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "fingerprint": null,
+  "inventory": { "packages": [], "configurations": [] },
+  "checked": [],
+  "skipped": [
+    {
+      "kind": "mcp",
+      "source": "https://example.org",
+      "identity": "documentation",
+      "destination": ".codex/config.toml"
+    }
+  ],
+  "researchStatus": []
+}

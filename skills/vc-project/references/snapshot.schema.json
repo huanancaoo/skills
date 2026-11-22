@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "vc-project snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "fingerprint", "inventory", "checked", "skipped", "researchStatus"],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "fingerprint": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packages", "configurations"],
+      "properties": {
+        "packages": { "type": "array", "items": { "$ref": "#/definitions/package" } },
+        "configurations": { "type": "array", "items": { "$ref": "#/definitions/configuration" } }
+      }
+    },
+    "checked": { "type": "array", "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" } },
+    "skipped": { "type": "array", "items": { "$ref": "#/definitions/skip" } },
+    "researchStatus": { "type": "array", "items": { "$ref": "#/definitions/researchFailure" } }
+  },
+  "definitions": {
+    "path": { "type": "string", "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\\\r\\n]+$" },
+    "text": { "type": "string", "minLength": 1 },
+    "version": { "type": ["string", "null"], "minLength": 1 },
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "$ref": "#/definitions/text" },
+        "version": { "$ref": "#/definitions/text" }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace", "section", "declaredName", "specifier", "resolvedName", "version", "installState", "lockfileResolution"],
+      "properties": {
+        "workspace": { "$ref": "#/definitions/path" },
+        "section": { "enum": ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"] },
+        "declaredName": { "$ref": "#/definitions/text" },
+        "specifier": { "$ref": "#/definitions/text" },
+        "resolvedName": { "$ref": "#/definitions/text" },
+        "version": { "$ref": "#/definitions/version" },
+        "installState": { "enum": ["installed", "installed-mismatch", "lockfile-only", "unresolved"] },
+        "lockfileResolution": { "anyOf": [{ "type": "null" }, { "$ref": "#/definitions/resolution" }] }
+      },
+      "if": { "properties": { "installState": { "enum": ["installed-mismatch", "lockfile-only"] } } },
+      "then": { "properties": { "lockfileResolution": { "$ref": "#/definitions/resolution" } } }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace", "path", "evidence", "digest", "review"],
+      "properties": {
+        "workspace": { "$ref": "#/definitions/path" },
+        "path": { "$ref": "#/definitions/path" },
+        "evidence": { "type": "string", "pattern": "^(?:schema:https://|filename:).+" },
+        "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "review": { "anyOf": [{ "type": "null" }, { "$ref": "#/definitions/configurationReview" }] }
+      }
+    },
+    "configurationReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["technology", "source", "fields"],
+      "properties": {
+        "technology": { "$ref": "#/definitions/text" },
+        "source": { "$ref": "#/definitions/text" },
+        "fields": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^(?:/(?:[^~/]|~[01])*)+$" }
+            }
+          ]
+        }
+      }
+    },
+    "skip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source", "identity", "destination"],
+      "properties": {
+        "kind": { "enum": ["skill", "mcp", "hook"] },
+        "source": { "$ref": "#/definitions/text" },
+        "identity": { "$ref": "#/definitions/text" },
+        "destination": { "$ref": "#/definitions/path" }
+      }
+    },
+    "researchFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "version", "status", "reason", "checkedAt"],
+      "properties": {
+        "key": { "$ref": "#/definitions/text" },
+        "version": { "$ref": "#/definitions/version" },
+        "status": { "enum": ["unreachable", "not-found"] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "checkedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$" }
+      }
+    }
+  }
+}
