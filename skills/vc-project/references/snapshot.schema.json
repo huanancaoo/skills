@@ -3,10 +3,11 @@
   "title": "vc-project snapshot",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "fingerprint", "inventory", "checked", "skipped", "researchStatus"],
+  "required": ["schemaVersion", "fingerprint", "codeStandardsDigest", "inventory", "checked", "skipped", "researchStatus"],
   "properties": {
-    "schemaVersion": { "const": 3 },
+    "schemaVersion": { "const": 4 },
     "fingerprint": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "codeStandardsDigest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
     "inventory": {
       "type": "object",
       "additionalProperties": false,
@@ -86,7 +87,7 @@
       "additionalProperties": false,
       "required": ["kind", "source", "identity", "destination"],
       "properties": {
-        "kind": { "enum": ["skill", "mcp", "hook"] },
+        "kind": { "enum": ["skill", "mcp", "hook", "code-standard"] },
         "source": { "$ref": "#/definitions/text" },
         "identity": { "$ref": "#/definitions/text" },
         "destination": { "$ref": "#/definitions/path" }

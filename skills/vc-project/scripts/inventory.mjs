@@ -12,6 +12,17 @@ const ignored = new Set([
 ]);
 const packageName = /^(?:@[\w.-]+\/)?[\w][\w.-]*$/;
 const namedConfig = /^[\w.-]+\.config\.(?:[cm]?[jt]sx?|jsonc?|ya?ml|toml)$/i;
+const typeProjectConfig = /^(?:js|ts)config(?:\.[\w.-]+)?\.json$/;
+const standardsConfigs = [
+  /^biome\.jsonc?$/,
+  /^(?:eslint\.config\.[cm]?[jt]s|\.eslintrc(?:\.(?:c?js|json|ya?ml))?)$/,
+  /^(?:prettier\.config\.[cm]?[jt]s|\.prettierrc(?:\.(?:[cm]?[jt]s|json5?|ya?ml|toml))?)$/,
+  typeProjectConfig,
+];
+const standardsPackages = new Set([
+  "eslint", "prettier", "@biomejs/biome", "typescript", "typescript-eslint",
+  "@typescript-eslint/eslint-plugin", "@typescript-eslint/parser",
+]);
 const localSpec = /^(?:workspace:|file:|link:|portal:|patch:|\.{1,2}\/|\/)/;
 const agentSignal = /\b(?:MCP|model context protocol|coding agents?|agent skills?)\b|(?:AGENTS|SKILL)\.md/i;
 const categorySignal = /\b(?:framework|runtime|hosting|cloud|database|authentication|testing|bundler|compiler|toolchain)\b/i;
@@ -97,8 +108,9 @@ function snapshotSpecifier(specifier) {
 
 function configurationFile(path, name) {
   const named = namedConfig.test(name);
+  const standard = standardsConfigs.some((pattern) => pattern.test(name));
   const json = /\.jsonc?$/i.test(name) && !/^(?:package(?:-lock)?|npm-shrinkwrap|skills-lock)\.json$/.test(name);
-  if (!named && (!json || statSync(path).size > 128 * 1024)) return null;
+  if (!named && !standard && (!json || statSync(path).size > 128 * 1024)) return null;
 
   const source = readFileSync(path, "utf8");
   let data;
@@ -106,7 +118,7 @@ function configurationFile(path, name) {
     const errors = [];
     const value = parseJsonc(source, errors, { allowTrailingComma: true });
     if (!errors.length) data = value;
-  } else if (/\.ya?ml$/i.test(name)) {
+  } else if (/\.ya?ml$/i.test(name) || name === ".prettierrc" || name === ".eslintrc") {
     try {
       data = parseConfigYaml(source);
     } catch {
@@ -114,8 +126,9 @@ function configurationFile(path, name) {
     }
   }
   const schema = httpsUrl(data?.$schema);
-  const evidence = schema ? "schema:" + schema : named ? "filename:" + name : null;
-  return evidence ? { source, data, evidence } : null;
+  if (!schema && !named && !standard) return null;
+  const evidence = schema ? "schema:" + schema : "filename:" + name;
+  return { source, data, evidence, standard, researchOwnership: Boolean(schema || named) };
 }
 
 function workspaceConfigurations(root, workspace) {
@@ -133,6 +146,46 @@ function workspaceConfigurations(root, workspace) {
   return sorted(records, (record) => record.path);
 }
 
+function workspaceStandards(workspace, manifest, files) {
+  const configurations = files.filter((file) => file.standard);
+  const scripts = Object.entries(manifest.scripts ?? {}).filter(([name, command]) =>
+    typeof command === "string" && (/(?:^|[:_-])(?:lint|format|check)(?:$|[:_-])/i.test(name) || /\b(?:eslint|prettier|biome)\b/.test(command)),
+  );
+  const settings = ["eslintConfig", "prettier"].filter((name) => Object.hasOwn(manifest, name));
+  const data = {
+    scripts: Object.fromEntries(scripts),
+    settings: Object.fromEntries(settings.map((name) => [name, manifest[name]])),
+  };
+  // A shared ownership review can track different fields from the ones that determine lint coverage.
+  const revisions = configurations.map((file) => {
+    const fields = typeProjectConfig.test(posix.basename(file.path))
+      ? ["/extends", "/references", "/files", "/include", "/exclude", "/compilerOptions"]
+      : null;
+    return [file.path, configurationDigest(file, fields)];
+  });
+  return {
+    workspace, settings,
+    scripts: scripts.map(([name]) => name).sort(),
+    configurations: configurations.map((file) => file.path),
+    digest: hash([configurationDigest({ data, path: "package.json" }, null), revisions]),
+  };
+}
+
+export function codeStandardsInventory(workspaces, packages) {
+  const scopes = new Map(workspaces.map(({ workspace, settings, configurations, scripts }) => [
+    workspace, { workspace, settings, configurations, scripts, dependencies: [] },
+  ]));
+  const toolKeys = [];
+  for (const item of packages) {
+    const { declaredName, resolvedName, section, version } = item;
+    if (![declaredName, resolvedName, item.lockfileResolution?.name].some((name) => standardsPackages.has(name))) continue;
+    scopes.get(item.workspace).dependencies.push({ section, declaredName, resolvedName, version });
+    toolKeys.push(recordKey(item));
+  }
+  const digest = hash([workspaces.map((item) => [item.workspace, item.digest]), toolKeys]);
+  return { digest, workspaces: sorted(scopes.values(), (scope) => scope.workspace) };
+}
+
 export function prepareInventory(root) {
   const manifestFile = join(root, "package.json");
   if (!existsSync(manifestFile)) return null;
@@ -142,13 +195,16 @@ export function prepareInventory(root) {
   const workspaces = workspacePaths(root, lockfile.patterns);
   const manifests = workspaces.map((path) => [path, readFileSync(join(root, path), "utf8")]);
   const configurationFiles = [];
+  const standards = [];
   const packages = [];
   const installations = new Map();
 
   for (const [path, source] of manifests) {
     const workspace = posix.dirname(path);
     const project = JSON.parse(source);
-    configurationFiles.push(...workspaceConfigurations(root, workspace));
+    const files = workspaceConfigurations(root, workspace);
+    configurationFiles.push(...files);
+    standards.push(workspaceStandards(workspace, project, files));
     for (const section of sections) {
       for (const declaredName of Object.keys(project[section] ?? {}).sort()) {
         if (!packageName.test(declaredName)) throw new Error("Invalid dependency name in " + path);
@@ -168,7 +224,7 @@ export function prepareInventory(root) {
     lockfile.manager, lockfile.file, lockfile.source && hash(lockfile.source), manifests,
     packages.map(({ prepared }) => prepared?.stamp.slice(1) ?? null),
   ]);
-  return { packageFingerprint, packages, configurationFiles, lockfile, workspaces };
+  return { packageFingerprint, packages, configurationFiles, lockfile, workspaces, standards };
 }
 
 function fieldValue(data, pointer) {
@@ -201,7 +257,7 @@ export function observeInventory(prepared, previousConfigurations) {
     const review = previous?.evidence === evidence ? previous.review : null;
     return { workspace, path, evidence, digest: configurationDigest(file, review?.fields ?? null), review };
   });
-  const fingerprint = hash([prepared.packageFingerprint, configurations.map(configKeys)]);
+  const fingerprint = hash([prepared.packageFingerprint, configurations.map(configKeys), prepared.standards.map((item) => item.digest)]);
   return { ...prepared, configurations, fingerprint };
 }
 
@@ -255,8 +311,12 @@ export function collectInventory(root, prepared) {
       });
     }
   }
+  // Standard-only files stay in the inventory when a schema is removed, without creating an online ownership task.
+  const ownershipPaths = new Set(prepared.configurationFiles
+    .filter((file) => file.researchOwnership)
+    .map((file) => file.path));
   for (const record of prepared.configurations) {
-    if (record.review) continue;
+    if (record.review || !ownershipPaths.has(record.path)) continue;
     online.push({
       inputKey: recordKey(record), researchKey: researchKey(record), version: null, record,
       reason: "configuration-ownership",

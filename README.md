@@ -88,6 +88,8 @@ npx skills add huanancaoo/skills -g
 
 同一会话中显式刷新会重新核对本地配置。依赖版本和相关设置一致时会复用已核实的调研。只答复 Question List 中的部分选项时，剩余选项继续沿用原问题。
 
+`docs/agents/code-standards.md` 记录各工作区实际使用的格式化和检查命令。缺少 ESLint 或 Prettier 时，Question List 提供采用 Biome（推荐）和补齐缺项两种方案，已有 Biome 能力会复用。两种方案都通过 ESLint 的类型感知规则 `@typescript-eslint/no-deprecated` 禁止新增已弃用 API。发现已有调用时，列出位置和替代方案，待用户确认后再迁移。
+
 ## 许可
 
 本仓库暂未声明许可证。使用或分发前，请先确认仓库所有者的许可条件。

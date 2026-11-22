@@ -10,7 +10,7 @@ const snapshotPath = ".agents/vc-project.json";
 
 function emptySnapshot() {
   return {
-    schemaVersion, fingerprint: null, inventory: { packages: [], configurations: [] },
+    schemaVersion, fingerprint: null, codeStandardsDigest: null, inventory: { packages: [], configurations: [] },
     checked: [], skipped: [], researchStatus: [],
   };
 }
@@ -41,6 +41,7 @@ function serialize(snapshot) {
   const data = {
     schemaVersion: snapshot.schemaVersion,
     fingerprint: snapshot.fingerprint,
+    codeStandardsDigest: snapshot.codeStandardsDigest,
     inventory: { packages, configurations },
     checked: [...new Set(snapshot.checked)].sort(),
     skipped: sorted(snapshot.skipped.map((item) => ordered(item, "skip")), skipKey),
@@ -73,7 +74,11 @@ export function loadSnapshot(root) {
   }
   if (snapshot.schemaVersion === 2) {
     // Earlier observations establish package state, but contain no baseline for configuration values.
-    snapshot = { ...snapshot, schemaVersion, fingerprint: null, inventory: { ...snapshot.inventory, configurations: [] } };
+    snapshot = { ...snapshot, schemaVersion: 3, fingerprint: null, inventory: { ...snapshot.inventory, configurations: [] } };
+  }
+  if (snapshot.schemaVersion === 3) {
+    // Establish the standards baseline once while retaining verified inputs and explicit decisions.
+    snapshot = { ...snapshot, schemaVersion, fingerprint: null, codeStandardsDigest: null };
   }
   validate(snapshot);
   return { previous, snapshot, path };

@@ -113,3 +113,96 @@ test("package inspection accepts only real guidance files and directories", (t) 
   assert.deepEqual(result.bundle[0].files, ["docs/README.mdx"]);
   assert.equal(result.research[0].reason, "published-agent-guidance");
 });
+
+test("code standards report workspace-local evidence, including aliases and config-only tools", (t) => {
+  const p = project(t, {
+    workspaces: ["apps/*"],
+    devDependencies: { "lint-engine": "npm:eslint@9.39.0" },
+    scripts: { "lint:check": "lint-engine src", start: "node src" },
+  });
+  p.write("eslint.config.mjs", 'throw new Error("Discovery must not execute project configs");');
+  p.write("apps/web/package.json", { name: "web", prettier: "./shared-style.cjs" });
+  p.write("apps/web/.prettierrc", "singleQuote: true\n");
+  p.write("apps/web/tsconfig.eslint.json", { compilerOptions: { allowJs: true }, include: ["src"] });
+  p.write("apps/worker/package.json", { name: "worker" });
+  p.write("apps/worker/biome.jsonc", '{ "formatter": { "enabled": true }, "linter": { "enabled": false } }');
+  p.write("node_modules/prettier/package.json", { name: "prettier", version: "3.0.0" });
+  const { codeStandards, research } = p.scan();
+  const [root, web, worker] = codeStandards;
+  assert.deepEqual(codeStandards.map((scope) => scope.workspace), [".", "apps/web", "apps/worker"]);
+  assert.deepEqual(root.scripts, ["lint:check"]);
+  assert.deepEqual(root.configurations, ["eslint.config.mjs"]);
+  assert.deepEqual(root.dependencies.map((dep) => [dep.declaredName, dep.resolvedName]), [["lint-engine", "eslint"]]);
+  assert.deepEqual(web.settings, ["prettier"]);
+  assert.deepEqual(web.configurations, ["apps/web/.prettierrc", "apps/web/tsconfig.eslint.json"]);
+  assert.deepEqual(worker.configurations, ["apps/worker/biome.jsonc"]);
+  assert.deepEqual(worker.dependencies, []);
+  assert.ok(research.every((group) => group.inputs.every((item) => item.path !== "apps/web/tsconfig.eslint.json")));
+});
+
+test("a toolchain skip survives refresh and unrelated dependency additions", (t) => {
+  const p = project(t);
+  assert.deepEqual(p.scan().codeStandards[0].dependencies, []);
+  const skip = {
+    kind: "code-standard", source: "https://biomejs.dev/installation/quick-start/",
+    identity: "missing-eslint-prettier", destination: "package.json",
+  };
+  p.record({ skipped: [skip] });
+  assert.equal(p.scan().status, "unchanged");
+  p.write("package.json", { private: true, dependencies: { utility: "1.0.0" } });
+  assert.equal(p.scan().codeStandards, undefined);
+  const before = p.snapshot();
+  const refresh = p.scan("--refresh");
+  assert.equal(refresh.codeStandards.length, 1);
+  assert.deepEqual(refresh.skipped, [skip]);
+  assert.equal(p.snapshot(), before);
+});
+
+test("a changed lint command, its typed project, or an ESLint override triggers a standards review", (t) => {
+  const p = project(t, { scripts: { lint: "eslint src" } });
+  p.write("tsconfig.json", { include: ["src"] });
+  p.write(".eslintrc.json", { rules: { "@typescript-eslint/no-deprecated": "error" } });
+  const first = p.scan();
+  assert.deepEqual(first.codeStandards[0].configurations, [".eslintrc.json", "tsconfig.json"]);
+  p.write("tsconfig.json", { include: ["app"] });
+  assert.ok(p.scan().codeStandards);
+  p.write(".eslintrc.json", { rules: { "@typescript-eslint/no-deprecated": "off" } });
+  assert.ok(p.scan().codeStandards);
+  p.write("package.json", { private: true, scripts: { lint: "eslint app --config ./config/custom.mjs" } });
+  assert.deepEqual(p.scan().codeStandards[0].scripts, ["lint"]);
+  assert.ok(!p.snapshot().includes("custom.mjs"));
+  assert.equal(p.scan().status, "unchanged");
+});
+
+test("a standards config that loses its schema remains present for local review", (t) => {
+  const p = project(t);
+  const source = "https://example.org/prettier-schema";
+  p.write(".prettierrc.json", { $schema: source, singleQuote: true });
+  const [input] = p.scan().research[0].inputs;
+  p.record({ configurationReviews: [{ inputKey: input.inputKey, technology: "Prettier", source, fields: ["/singleQuote"] }] });
+  p.write(".prettierrc.json", { singleQuote: true });
+  const result = p.scan();
+  assert.deepEqual(result.codeStandards[0].configurations, [".prettierrc.json"]);
+  assert.deepEqual(result.research, []);
+  assert.equal(result.configurationChanges, undefined);
+  assert.equal(JSON.parse(p.snapshot()).inventory.configurations[0].evidence, "filename:.prettierrc.json");
+});
+
+test("an existing v3 project gets one standards check and retains its decisions", (t) => {
+  const p = project(t, { dependencies: { catalog: "1.0.0" } });
+  p.write("node_modules/catalog/package.json", { name: "catalog", version: "1.0.0" });
+  p.write("node_modules/catalog/SKILL.md", "# Catalog");
+  const key = p.scan().bundle[0].inputKey;
+  const skip = { kind: "mcp", source: "https://example.org/catalog", identity: "catalog", destination: ".codex/config.toml" };
+  p.record({ checked: [key], skipped: [skip] });
+  const legacy = JSON.parse(p.snapshot());
+  legacy.schemaVersion = 3;
+  delete legacy.codeStandardsDigest;
+  p.write(".agents/vc-project.json", legacy);
+  assert.equal(p.scan().codeStandards.length, 1);
+  const state = JSON.parse(p.snapshot());
+  assert.equal(state.schemaVersion, 4);
+  assert.deepEqual(state.checked, [key]);
+  assert.deepEqual(state.skipped, [skip]);
+  assert.equal(p.scan().status, "unchanged");
+});

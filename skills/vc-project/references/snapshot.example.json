@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "fingerprint": null,
+  "codeStandardsDigest": null,
   "inventory": { "packages": [], "configurations": [] },
   "checked": [],
   "skipped": [

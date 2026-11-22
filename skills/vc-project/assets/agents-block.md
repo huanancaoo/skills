@@ -5,5 +5,6 @@ From the repository root, run `node .agents/skills/vc-project/scripts/collect-in
 
 Read a guide when its condition matches the current task.
 
+- Read [Code standards](docs/agents/code-standards.md) when writing or reviewing JS/TS code, handling deprecated APIs, or changing formatter and lint configuration.
 {{domain_links}}
 <!-- END:vc-project -->

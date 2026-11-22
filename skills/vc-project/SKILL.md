@@ -1,6 +1,6 @@
 ---
 name: vc-project
-description: Initialize or maintain project-local Codex tooling in JavaScript and TypeScript repositories. Use for explicit vc-project setup or refresh, or to handle a changed local inventory from the project's AGENTS.md. Discover maintainer-backed Skills, MCP servers, Hooks, and bundled agent guidance. Use a structured Question List for optional setup.
+description: Initialize or refresh project-local Codex tooling and code standards in JavaScript and TypeScript repositories. Use for vc-project setup, explicit refresh, or a changed inventory from AGENTS.md. Discover maintainer-backed Skills, MCP, Hooks, and bundled guidance. Review formatting, linting, and ESLint deprecated API checks through structured questions.
 ---
 
 # vc-project
@@ -15,6 +15,10 @@ The collector requires Node.js 22.17 or later. It reads package-manager metadata
 - For `configurationChanges`, reuse the recorded ownership and locally review the effect on commands and domain guides. Review changes unrelated to the current task during wrap-up. Read source-based configuration without executing it. Update guidance that depended on a configuration reported as removed.
 - Use `lockfileResolution` to establish the project's expected package and version. For each `installed-mismatch`, report the installed and lockfile resolutions. Treat bundled guidance as evidence for the installed copy and research the expected version from the lockfile. Keep affected version-sensitive findings and setup pending until the two resolutions match. Continue unrelated work.
 - Read the [collector contract](references/inventory.md) for the output, snapshot fields, and recording commands. The [JSON Schema](references/snapshot.schema.json) and [minimal snapshot](references/snapshot.example.json) define the on-disk format.
+
+## Maintain code standards
+
+When the scan returns `codeStandards`, follow the [code standards workflow](references/code-standards.md). On automatic runs, handle it during wrap-up unless the current task needs it. Record verified workspace checks in `docs/agents/code-standards.md`. If formatting or linting is missing, ask whether to adopt Biome (recommended) or complete the ESLint and Prettier setup. Enforce `@typescript-eslint/no-deprecated` at error severity through the project's normal lint command or required check, including alongside Biome. Ask before enabling or installing the check. Present existing uses for a separate migration decision.
 
 ## Keep automatic runs within budget
 
@@ -32,7 +36,7 @@ Use [the Question List templates](references/questions.md). Verify the proposal 
 
 Compare proposals with the effective setup, explicit skips, and questions already sent in this conversation. Send a Question List only when at least one new choice remains. An unanswered entry in a partially submitted list retains its original question through same-session refreshes.
 
-Continue independent work while awaiting choices. Apply only submitted Apply selections and record only explicit skips. Before acting on a delayed reply, verify that the proposal is still applicable and the approved change is still needed. Unanswered proposals can be revisited on explicit refresh in a later session. When the structured question tool is unavailable, report the affected items as pending and continue.
+Continue independent work while awaiting choices. Apply only the specific change or tooling option the user submitted and record only explicit skips. Before acting on a delayed reply, verify that the proposal is still applicable and the approved change is still needed. Unanswered proposals can be revisited on explicit refresh in a later session. When the structured question tool is unavailable, report the affected items as pending and continue.
 
 Keep shared Codex settings and Skills at the project root. Verify each command's working directory against the tool's documented configuration lookup and the consuming workspace. Run each command in its approved `cwd` with any approved, officially supported workspace or configuration path arguments. Present the revised action for approval if the directory or arguments change.
 

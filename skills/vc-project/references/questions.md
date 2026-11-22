@@ -2,6 +2,8 @@
 
 Call `request_user_input_async` with a `questions` array. Each entry has exactly `title` and `options`. Adapt human-readable text to the user's language and keep the order shown.
 
+For formatter and linter alternatives, ESLint rule setup, and decisions about existing deprecated API uses, use the [code standards choices](code-standards.md). Each mutually exclusive toolchain is an option in the same question.
+
 ## Review timing
 
 Use one question when the collector returns `budget.requiresDecision`.
@@ -15,7 +17,7 @@ Set `options` to `Continue current task` and `Review now`. Wait for Review now b
 
 ## Optional change
 
-Send one `questions` entry per candidate in the same call. Populate each `title` with the following lines.
+For Skills, MCP servers, and Hooks, send one `questions` entry per candidate in the same call. Populate each `title` with the following lines.
 
 ```text
 Apply {kind} {identity} to this project?
