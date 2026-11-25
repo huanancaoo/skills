@@ -8,6 +8,10 @@ When tabs switch sections and show counts, use them as the section navigation. O
 
 Use a sidebar or nested card only for distinct content the task needs. Keep a single column when the sidebar would only repeat a status or role from the header.
 
+## Table and DataTable columns
+
+In both Table and DataTable, each data cell must show only the field named by its column header. Move any independent field stacked beneath the main value into its own labeled column in the same row.
+
 ## Form feedback and destructive actions
 
 Show a field hint only to explain a disabled control, an irreversible consequence, or a business constraint. Keep it to one short sentence. Preserve field labels, accessible control names, and validation errors at their point of use.
