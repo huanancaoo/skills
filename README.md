@@ -90,6 +90,8 @@ npx skills add huanancaoo/skills -g
 
 `docs/agents/code-standards.md` 记录各工作区实际使用的格式化和检查命令。缺少 ESLint 或 Prettier 时，Question List 提供采用 Biome（推荐）和补齐缺项两种方案，已有 Biome 能力会复用。两种方案都通过 ESLint 的类型感知规则 `@typescript-eslint/no-deprecated` 禁止新增已弃用 API。发现已有调用时，列出位置和替代方案，待用户确认后再迁移。
 
+项目有页面或 UI 组件时，`vc-project` 会把「页面组件信息克制与去重」并入已有的界面指南，或创建 `docs/agents/page-components.md`。根 `AGENTS.md` 在开发或评审页面组件时引导读取，覆盖同屏信息和主操作去重、页签与卡片、表单提示、危险操作及容器宽度。已初始化的项目更新 Skill 后，显式刷新一次即可补上这条规范。
+
 ## 许可
 
 本仓库暂未声明许可证。使用或分发前，请先确认仓库所有者的许可条件。
