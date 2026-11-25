@@ -5,6 +5,8 @@ import { lockedPackages, openLockfile, targetName } from "./lockfiles.mjs";
 import { inspectPackage, installedLocation, pnpInstallations, preparePackage } from "./package-files.mjs";
 import { parseConfigYaml, parseJsonc } from "./vendor/parsers.mjs";
 
+// Resolver changes can invalidate a snapshot even when the project inputs are identical.
+const inventoryRevision = 1;
 const sections = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
 const ignored = new Set([
   ".git", ".agents", ".cache", ".next", ".nuxt", ".output", ".turbo", ".yarn", "node_modules",
@@ -257,7 +259,10 @@ export function observeInventory(prepared, previousConfigurations) {
     const review = previous?.evidence === evidence ? previous.review : null;
     return { workspace, path, evidence, digest: configurationDigest(file, review?.fields ?? null), review };
   });
-  const fingerprint = hash([prepared.packageFingerprint, configurations.map(configKeys), prepared.standards.map((item) => item.digest)]);
+  const fingerprint = hash([
+    inventoryRevision, prepared.packageFingerprint, configurations.map(configKeys),
+    prepared.standards.map((item) => item.digest),
+  ]);
   return { ...prepared, configurations, fingerprint };
 }
 
