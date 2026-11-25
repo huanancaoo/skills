@@ -80,7 +80,9 @@ function pnpmLookup(data, root, { workspace, section, declaredName, specifier },
   if (lockedSpecifier !== specifier) return null;
   const version = typeof entry === "string" ? entry : entry.version;
   if (/^(?:link:|file:|workspace:)/.test(version)) return localPackage(root, workspace, version, name);
-  return fromLocator(version.replace(/^\//, ""), name);
+  // Parenthesized suffixes describe the peer context, separate from the package locator.
+  const [locator] = version.split("(", 1);
+  return fromLocator(locator.replace(/^\//, ""), name);
 }
 
 function yarnLookup(descriptors, root, { workspace, declaredName, specifier }, name) {
