@@ -6,7 +6,9 @@ Use the collector's `codeStandards` workspace records to locate direct dependenc
 
 In a trusted project with ESLint already installed, check the effective configuration on representative files before proposing a rule change. Presets can enable the rule and narrower overrides can turn it off. Trace the normal lint or required check command through its scripts to establish whether it actually runs ESLint on those sources.
 
-Maintain `docs/agents/code-standards.md` using the [guide template](../assets/code-standards.md). Merge with existing project rules. Replace `{{workspace_checks}}` with the actual formatter, linter, ESLint rule status, config paths, and runnable commands with their working directories. Mark unconfigured or unverified checks accurately. The root guide links here for JS/TS authoring and review.
+Maintain `docs/agents/code-standards.md` using the [guide template](../assets/code-standards.md). On setup and refresh, merge the full **Code quality metrics** section, including the table and its review guidance. Update that section in place and preserve project-specific rules and enforced limits.
+
+Replace `{{workspace_checks}}` with the actual formatter, linter, ESLint rule status, config paths, and runnable commands with their working directories. Mark unconfigured or unverified checks accurately. The root guide links here for JS/TS authoring and review.
 
 ## Ask about missing tools
 

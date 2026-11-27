@@ -18,7 +18,9 @@ The collector requires Node.js 22.17 or later. It reads package-manager metadata
 
 ## Maintain code standards
 
-When the scan returns `codeStandards`, follow the [code standards workflow](references/code-standards.md). On automatic runs, handle it during wrap-up unless the current task needs it. Record verified workspace checks in `docs/agents/code-standards.md`. If formatting or linting is missing, ask whether to adopt Biome (recommended) or complete the ESLint and Prettier setup. Enforce `@typescript-eslint/no-deprecated` at error severity through the project's normal lint command or required check, including alongside Biome. Ask before enabling or installing the check. Present existing uses for a separate migration decision.
+When the scan returns `codeStandards`, follow the [code standards workflow](references/code-standards.md). On automatic runs, handle it during wrap-up unless the current task needs it. Include the template's [code quality metrics and review guidance](assets/code-standards.md#code-quality-metrics) alongside verified workspace checks in `docs/agents/code-standards.md`.
+
+If formatting or linting is missing, ask whether to adopt Biome (recommended) or complete the ESLint and Prettier setup. Enforce `@typescript-eslint/no-deprecated` at error severity through the project's normal lint command or required check, including alongside Biome. Ask before enabling or installing the check. Present existing uses for a separate migration decision.
 
 ## Keep automatic runs within budget
 
